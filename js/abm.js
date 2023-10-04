@@ -45,6 +45,10 @@ if (tableUser.childNodes.length === 0) {
   sectionABM.appendChild(EMPTY_TABLE);
 }
 
+function clearInputs() {
+  inputFirstName.value = EMPTY_STRING;
+  inputLastName.value = EMPTY_STRING;
+}
 function isValidateInput(input, nameTitle) {
   if (input.value === EMPTY_STRING || !regex_words.test(input.value)) {
     input.classList.add(IS_INVALID);
@@ -102,6 +106,17 @@ function changeIcons(icon, element, success = true) {
   }, 500);
 }
 
+function clickTable(event) {
+  const trId = event.target.id.match(regex_trId);
+  const trSelection = document.getElementById(trId);
+  if (nextSelection !== 0) nextSelection = 0;
+  if (trSelection.classList.contains('selection')) {
+    removeSelections(trSelection);
+  } else {
+    addSelections(trSelection);
+  }
+}
+
 btnAdd.onclick = () => {
   if (
     isValidateInput(inputFirstName, 'First Name') ||
@@ -118,41 +133,57 @@ btnAdd.onclick = () => {
       )
     );
     changeIcons(ADD_ICON, btnAdd);
-    inputFirstName.value = EMPTY_STRING;
-    inputLastName.value = EMPTY_STRING;
+    clearInputs();
+    tableUser.addEventListener('click', clickTable);
   } else {
     changeIcons(ADD_ICON, btnAdd, false);
   }
 };
-
+function handlerClickEdit() {
+  if (
+    inputFirstName.value !== EMPTY_STRING &&
+    inputLastName.value !== EMPTY_STRING &&
+    listUserSelections.length !== 0
+  ) {
+    listUserSelections[nextSelection].children[1].innerText =
+      inputFirstName.value;
+    listUserSelections[nextSelection].children[2].innerText =
+      inputLastName.value;
+    removeSelections(listUserSelections[nextSelection]);
+    clearInputs();
+    btnAdd.removeAttribute('disabled');
+    tableUser.addEventListener('click', clickTable);
+    handlerClickEdit();
+  } else if (listUserSelections.length > 0) {
+    listUserSelections[nextSelection];
+    inputFirstName.value =
+      listUserSelections[nextSelection].children[1].innerText;
+    inputLastName.value =
+      listUserSelections[nextSelection].children[2].innerText;
+    btnAdd.setAttribute('disabled', 'disabled');
+    tableUser.removeEventListener('click', clickTable);
+  }
+}
 btnEdit.onclick = () => {
   changeIcons(EDIT_ICON, btnEdit, listUserSelections.length > 0);
-  if (listUserSelections.length > 0) {
-    btnDelete;
-    listUserSelections[nextSelection];
-    console.log(
-      '🚀 ~ file: abm.js:133 ~ listUserSelections[nextSelection]:',
-      listUserSelections[nextSelection].children
-    );
-    listUserSelections[nextSelection].children;
-
-    //removeSelections(listUserSelections[nextSelection]);
-  }
+  handlerClickEdit();
 };
 
+function handlerClickDelete() {
+  if (listUserSelections.length === 0) {
+    btnAdd.removeAttribute('disabled');
+    btnEdit.removeAttribute('disabled');
+    tableUser.addEventListener('click', clickTable);
+  } else if (listUserSelections.length > 0) {
+    btnAdd.setAttribute('disabled', 'disabled');
+    btnEdit.setAttribute('disabled', 'disabled');
+    tableUser.removeEventListener('click', clickTable);
+    tableUser.removeChild(listUserSelections[nextSelection]);
+    removeSelections(listUserSelections[nextSelection]);
+    handlerClickDelete();
+  }
+}
 btnDelete.onclick = () => {
   changeIcons(TRASH_ICON, btnDelete, listUserSelections.length > 0);
-  if (listUserSelections.length > 0) {
-    console.log('btnDelete', btnDelete);
-  }
+  handlerClickDelete();
 };
-
-tableUser.addEventListener('click', (event) => {
-  const trId = event.target.id.match(regex_trId);
-  const trSelection = document.getElementById(trId);
-  if (trSelection.classList.contains('selection')) {
-    removeSelections(trSelection);
-  } else {
-    addSelections(trSelection);
-  }
-});
